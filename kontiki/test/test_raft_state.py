@@ -13,20 +13,20 @@ def applyCommand(*args):
 class RaftStateTest(unittest.TestCase):
 
     def setUp(self):
-        self.persister = persist.SQLitePersist(':memory:')
-        self.persister.connect()
+        persister = persist.SQLitePersist(':memory:')
+        persister.connect()
         identity = 'identity'
         peers = set()
         timeoutRange = (.150, .350)
         self.server = rpc.RaftServer(identity=identity, peers=peers,
                                      applyCommand=applyCommand,
-                                     persister=self.persister)
+                                     persister=persister)
         self.state = raft.State(identity=identity,
                                 server=self.server,
                                 peers=peers,
                                 applyCommand=applyCommand,
                                 electionTimeoutRange=timeoutRange,
-                                persister=self.persister)
+                                persister=persister)
 
         originalClock = raft.StartsElection.clock
         self.patch(raft.StartsElection, 'clock', task.Clock())
