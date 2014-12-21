@@ -1,7 +1,7 @@
 from kontiki import raft, persist, rpc
 from kontiki import persist
 from twisted.trial import unittest
-from twisted.internet import task
+from twisted.internet import task, base
 from kontiki.test.common import dropResult
 
 
@@ -46,7 +46,7 @@ class RaftStartsElectionTest(unittest.TestCase):
 
         self.addCleanup(restoreClock)
 
-    def test_cancel_all(self):
+    def test_cancel_All(self):
         dt = DummyTask()
         timeout = DummyTask()
         self.state.pending.add(dt)
@@ -67,4 +67,11 @@ class RaftStartsElectionTest(unittest.TestCase):
         # This should do nothing
         self.state.cancelBecomeCandidateTimeout()
         self.assertIsNone(self.state.becomeCandidateTimeout)
-        
+
+        results = self.state.begin()
+
+        self.state.resetElectionTimeout()
+        self.assertTrue(self.state.electionTimeout > 0.150)
+        self.assertTrue(self.state.electionTimeout < 0.350)
+        self.assertTrue(isinstance(self.state.becomeCandidateTimeout,
+                                   base.DelayedCall))
